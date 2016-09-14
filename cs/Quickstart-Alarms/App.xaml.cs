@@ -4,10 +4,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Background;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -60,6 +63,12 @@ namespace Quickstart_Alarms
             // Load the data model if not loaded
             await DataModel.LoadAsync();
 
+            // When launched, we ensure everything is scheduled
+            DataModel.EnsureAllScheduled();
+
+            // Set up background tasks
+            await RegisterBackgroundTasks();
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -68,6 +77,28 @@ namespace Quickstart_Alarms
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
                 rootFrame = new Frame();
+
+                var navManager = SystemNavigationManager.GetForCurrentView();
+                navManager.BackRequested += (s, e) =>
+                {
+                    if (rootFrame.CanGoBack)
+                    {
+                        rootFrame.GoBack();
+                        e.Handled = true;
+                    }
+                };
+
+                rootFrame.Navigated += delegate
+                {
+                    if (rootFrame.CanGoBack)
+                    {
+                        navManager.AppViewBackButtonVisibility = AppViewBackButtonVisibility.Visible;
+                    }
+                    else
+                    {
+                        navManager.AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;
+                    }
+                };
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
@@ -94,6 +125,25 @@ namespace Quickstart_Alarms
             }
         }
 
+        private const string PERIODIC_TASK_NAME = "Periodic";
+
+        private async Task RegisterBackgroundTasks()
+        {
+            await BackgroundExecutionManager.RequestAccessAsync();
+
+            RegisterPeriodicBackgroundTask();
+        }
+
+        private void RegisterPeriodicBackgroundTask()
+        {
+            if (!BackgroundTaskRegistration.AllTasks.Any(i => i.Value.Name.Equals(PERIODIC_TASK_NAME)))
+            {
+                var builder = new BackgroundTaskBuilder();
+                builder.SetTrigger(new TimeTrigger(24 * 60, false)); // Every 24 hours
+                builder.Register();
+            }
+        }
+
         /// <summary>
         /// Invoked when Navigation to a certain page fails
         /// </summary>
@@ -115,6 +165,20 @@ namespace Quickstart_Alarms
         {
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
+            deferral.Complete();
+        }
+
+        protected override async void OnBackgroundActivated(BackgroundActivatedEventArgs args)
+        {
+            var deferral = args.TaskInstance.GetDeferral();
+
+            if (args.TaskInstance.Task.Name.Equals(PERIODIC_TASK_NAME))
+            {
+                // Re-schedule the notifications
+                await DataModel.LoadAsync();
+                DataModel.EnsureAllScheduled();
+            }
+
             deferral.Complete();
         }
     }

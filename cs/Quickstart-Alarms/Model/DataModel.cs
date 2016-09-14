@@ -24,6 +24,9 @@ namespace Quickstart_Alarms.Model
         {
             try
             {
+                // Generate Id for it
+                alarm.Id = Guid.NewGuid();
+
                 Alarms.Add(alarm);
 
                 await Task.Run(async delegate
@@ -34,6 +37,22 @@ namespace Quickstart_Alarms.Model
                 });
             }
 
+            catch { }
+        }
+
+        public static async Task DeleteAlarm(MyAlarm alarm)
+        {
+            try
+            {
+                Alarms.Remove(alarm);
+
+                await Task.Run(async delegate
+                {
+                    await SaveAlarmsAsync();
+
+                    AlarmSchedulerHelper.RemoveAlarm(alarm);
+                });
+            }
             catch { }
         }
 
@@ -53,6 +72,14 @@ namespace Quickstart_Alarms.Model
             return _loadTask;
         }
 
+        public static void EnsureAllScheduled()
+        {
+            foreach (var alarm in Alarms)
+            {
+                AlarmSchedulerHelper.EnsureScheduled(alarm);
+            }
+        }
+
         private static async Task GenerateLoadTask()
         {
             try
@@ -61,16 +88,24 @@ namespace Quickstart_Alarms.Model
                 {
                     var file = await GetAlarmsFileAsync();
 
-                    using (Stream s = await file.OpenStreamForReadAsync())
+                    try
                     {
-                        MyAlarm[] alarms = (MyAlarm[])AlarmsSerializer.ReadObject(s);
+                        using (Stream s = await file.OpenStreamForReadAsync())
+                        {
+                            MyAlarm[] alarms = (MyAlarm[])AlarmsSerializer.ReadObject(s);
 
-                        Alarms = new ObservableCollection<MyAlarm>(alarms);
+                            Alarms = new ObservableCollection<MyAlarm>(alarms);
+                        }
+                    }
+                    catch
+                    {
+                        await file.DeleteAsync();
+                        Alarms = new ObservableCollection<MyAlarm>();
                     }
                 });
             }
 
-            catch
+            catch (Exception ex)
             {
                 Alarms = new ObservableCollection<MyAlarm>();
             }

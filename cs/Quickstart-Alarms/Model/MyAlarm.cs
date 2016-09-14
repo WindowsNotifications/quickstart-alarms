@@ -11,6 +11,9 @@ namespace Quickstart_Alarms.Model
     public class MyAlarm
     {
         [DataMember]
+        public Guid Id { get; set; }
+
+        [DataMember]
         public string Name { get; set; }
 
         [DataMember]

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -33,6 +34,26 @@ namespace Quickstart_Alarms
         private void ButtonAddAlarm_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(AddAlarmPage));
+        }
+
+        private async void ListViewAlarms_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            MyAlarm alarm = e.ClickedItem as MyAlarm;
+
+            MessageDialog dialog = new MessageDialog("Do you want to delete this alarm?");
+            dialog.Commands.Add(new UICommand("Delete") { Id = "delete" });
+            dialog.Commands.Add(new UICommand("Cancel"));
+
+            var result = await dialog.ShowAsync();
+            if (object.Equals(result.Id, "delete"))
+            {
+                await DataModel.DeleteAlarm(alarm);
+            }
+        }
+
+        private void ButtonViewScheduled_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ViewScheduledToastsPage));
         }
     }
 }

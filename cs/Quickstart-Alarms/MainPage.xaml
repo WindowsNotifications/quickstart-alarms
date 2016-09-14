@@ -9,11 +9,13 @@
 
     <ListView
         x:Name="ListViewAlarms"
-        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        IsItemClickEnabled="True"
+        ItemClick="ListViewAlarms_ItemClick">
 
         <ListView.ItemTemplate>
             <DataTemplate>
-                <StackPanel>
+                <StackPanel Margin="10,5">
                     <TextBlock
                         Text="{Binding TimeOfDay}"
                         Style="{ThemeResource SubtitleTextBlockStyle}"/>
@@ -31,8 +33,14 @@
             <AppBarButton
                 x:Name="ButtonAddAlarm"
                 Icon="Add"
-                Content="Add alarm"
+                Label="Add alarm"
                 Click="ButtonAddAlarm_Click"/>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton
+                    x:Name="ButtonViewScheduled"
+                    Label="View scheduled toasts"
+                    Click="ButtonViewScheduled_Click"/>
+            </CommandBar.SecondaryCommands>
         </CommandBar>
     </Page.BottomAppBar>
 </Page>
