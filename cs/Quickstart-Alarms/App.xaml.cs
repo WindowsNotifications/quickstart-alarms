@@ -138,7 +138,10 @@ namespace Quickstart_Alarms
         {
             if (!BackgroundTaskRegistration.AllTasks.Any(i => i.Value.Name.Equals(PERIODIC_TASK_NAME)))
             {
-                var builder = new BackgroundTaskBuilder();
+                var builder = new BackgroundTaskBuilder()
+                {
+                    Name = PERIODIC_TASK_NAME
+                };
                 builder.SetTrigger(new TimeTrigger(24 * 60, false)); // Every 24 hours
                 builder.Register();
             }
