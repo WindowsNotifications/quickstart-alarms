@@ -1,5 +1,4 @@
-﻿using Quickstart_Alarms.Helpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -33,7 +32,7 @@ namespace Quickstart_Alarms.Model
                 {
                     await SaveAlarmsAsync();
 
-                    AlarmSchedulerHelper.ScheduleAlarm(alarm);
+                    AlarmHelper.ScheduleAlarm(alarm);
                 });
             }
 
@@ -50,7 +49,7 @@ namespace Quickstart_Alarms.Model
                 {
                     await SaveAlarmsAsync();
 
-                    AlarmSchedulerHelper.RemoveAlarm(alarm);
+                    AlarmHelper.RemoveAlarm(alarm);
                 });
             }
             catch { }
@@ -76,7 +75,7 @@ namespace Quickstart_Alarms.Model
         {
             foreach (var alarm in Alarms)
             {
-                AlarmSchedulerHelper.EnsureScheduled(alarm);
+                AlarmHelper.EnsureScheduled(alarm);
             }
         }
 

@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Notifications;
 
-namespace Quickstart_Alarms.Helpers
+namespace Quickstart_Alarms
 {
-    public static class AlarmSchedulerHelper
+    public static class AlarmHelper
     {
         private const int DAYS_IN_ADVANCE_TO_SCHEDULE = 5;
 
